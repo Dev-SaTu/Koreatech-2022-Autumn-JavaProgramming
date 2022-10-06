@@ -1,3 +1,4 @@
+package JavaPractice;
 import java.util.Scanner;
 
 public class JavaPractice03_02 {
@@ -30,6 +31,8 @@ public class JavaPractice03_02 {
 		}
 		
 		System.out.println("areaSum: " + areaSum);
+		
+		scan.close();
 		
 	}
 

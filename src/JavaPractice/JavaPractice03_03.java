@@ -1,3 +1,4 @@
+package JavaPractice;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -11,7 +12,7 @@ public class JavaPractice03_03 {
 		
 		for (int i = 0; i < 2; i++) {
 			
-			System.out.print("¼±¼ö ÀÌ¸§ ÀÔ·Â >> ");
+			System.out.print("ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ ï¿½Ô·ï¿½ >> ");
 			scan = new Scanner(System.in);
 		
 			playerArray[i] = new Player(scan.next());
@@ -25,7 +26,7 @@ public class JavaPractice03_03 {
 			for (int i = 0; i < 2; i++) {
 				
 				Player player = playerArray[i];
-				System.out.printf("%s¾¾, <Enter ¿Ü ¾Æ¹«Å°³ª Ä¡¼¼¿ä>", player.getName());
+				System.out.printf("%sï¿½ï¿½, <Enter ï¿½ï¿½ ï¿½Æ¹ï¿½Å°ï¿½ï¿½ Ä¡ï¿½ï¿½ï¿½ï¿½>", player.getName());
 				
 				int[] xArray = new int[3];
 				
@@ -39,7 +40,7 @@ public class JavaPractice03_03 {
 				
 				if (xArray[0] == xArray[1] && xArray[1] == xArray[2]) {
 					
-					System.out.printf("%sÀÌ ½Â¸®ÇÏ¿´½À´Ï´Ù.\n", player.getName());
+					System.out.printf("%sï¿½ï¿½ ï¿½Â¸ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.\n", player.getName());
 					
 					done = true;
 					break;

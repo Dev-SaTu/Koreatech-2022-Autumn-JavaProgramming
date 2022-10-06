@@ -1,12 +1,13 @@
+package JavaPractice;
 
 public class JavaPractice03_01 {
 
 	public static void main(String[] arg) {
 
 		Song mySong = new Song("Nessun Dorma");
-		Song yourSong = new Song("°øÁÖ´Â Àá ¸ø ÀÌ·ç°í");
-		System.out.println("³» ³ë·¡´Â " + mySong.getTitle());
-		System.out.println("³Ê ³ë·¡´Â "+ yourSong.getTitle());
+		Song yourSong = new Song("ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½Ì·ï¿½ï¿½");
+		System.out.println("ï¿½ï¿½ ï¿½ë·¡ï¿½ï¿½ " + mySong.getTitle());
+		System.out.println("ï¿½ï¿½ ï¿½ë·¡ï¿½ï¿½ "+ yourSong.getTitle());
 
 	}
 
