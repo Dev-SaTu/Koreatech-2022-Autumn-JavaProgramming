@@ -33,6 +33,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
@@ -115,6 +116,9 @@ public class UI extends JFrame {
 
 	/** selected subject */
 	private List<JSONArray> selectedSubject = new ArrayList<JSONArray>();
+
+	/** selected subject color */
+	private List<Color> selectedSubjectColor = new ArrayList<Color>();
 
 	/**
 	 * Launch the application.
@@ -286,16 +290,16 @@ public class UI extends JFrame {
 
 		});
 		searchedTable.getTableHeader().addMouseListener(new MouseAdapter() {
-			
+
 			@Override
 			public void mouseClicked(MouseEvent e) {
 
 				if (e.getButton() == MouseEvent.BUTTON1) {
-					
+
 				}
 
 			}
-			
+
 		});
 		scrollPane.setViewportView(searchedTable);
 
@@ -362,7 +366,7 @@ public class UI extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 
 				if (e.getButton() == MouseEvent.BUTTON1) {
-					
+
 				}
 
 			}
@@ -384,10 +388,11 @@ public class UI extends JFrame {
 				super.paintComponent(g2);
 				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-				// Base
+				// Background
 				g2.setColor(Color.white);
 				g2.fillRect(0, 0, getWidth(), getHeight());
-
+				
+				// Grid
 				g2.setColor(Color.black);
 				g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
 
@@ -411,20 +416,29 @@ public class UI extends JFrame {
 						getHeight() - getHeight() / 20 - 1);
 				g2.drawString("이후", 28, getHeight() - 12);
 
-				// Schedule				
-				g2.setColor(Color.cyan);
-				g2.fillRect(81, 33, 80, 63);
-				g2.fillRect(162, 33, 80, 31);
-
-				g2.setColor(Color.black);
-				g2.setStroke(new BasicStroke(2));
-				g2.drawRect(81 - 1, 33 - 1, 80 + 1, 63 + 1);
-				g2.drawRect(162 - 1, 33 - 1, 80 + 1, 31 + 1);
-				
-				g2.fillRect(40, selectedSubject.size() * 40 + 40, 20, 20);
-
+				// Schedule
+				for (JSONArray array : selectedSubject) {
+					g2.setColor(selectedSubjectColor.get(selectedSubject.indexOf(array)));
+					JSONArray schedule = array.getJSONArray(10);
+					Map<Integer, Integer[]> dayMap = new HashMap<Integer, Integer[]>();
+					for (int i = 0; i < schedule.length(); i++) {
+						int code = schedule.getInt(i);
+						int day = code / 100;
+						int time = code % 100;
+						if (!dayMap.containsKey(day)) {
+							dayMap.put(day, new Integer[] {Integer.MAX_VALUE, 0});
+						}
+						dayMap.put(day, new Integer[] {Math.min(dayMap.get(day)[0], time), Math.max(dayMap.get(day)[1], time)});
+						g2.fillRect((day + 1) * getWidth() / 6 + 1, (time + 1) * getHeight() / 20 + 1, getWidth() / 6, getHeight() / 20 + 1);
+					}
+					g2.setColor(Color.black);
+					g2.setStroke(new BasicStroke(2));
+					for (int day : dayMap.keySet()) {
+						g2.drawRect((day + 1) * getWidth() / 6, (dayMap.get(day)[0] + 1) * getHeight() / 20, getWidth() / 6, (dayMap.get(day)[1] - dayMap.get(day)[0] + 1) * getHeight() / 20 + 1);	
+					}
+				}
 			}
-
+			
 		};
 		GridBagConstraints gbc_schedulePanel_2 = new GridBagConstraints();
 		gbc_schedulePanel_2.fill = GridBagConstraints.BOTH;
@@ -599,6 +613,7 @@ public class UI extends JFrame {
 
 			// temp 오름차순, 내림차순 생각하면 검색해야 함!
 			selectedSubject.add(searchedSubject.get(searchedTable.getSelectedRow()));
+			selectedSubjectColor.add(new Color(new Random().nextInt(256), new Random().nextInt(256), new Random().nextInt(256)));
 
 			schedulePanel.repaint();
 			reloadTable(selectedTable, selectedSubject);
@@ -614,7 +629,8 @@ public class UI extends JFrame {
 
 			// temp 오름차순, 내림차순 생각하면 검색해야 함!
 			selectedSubject.remove(selectedTable.getSelectedRow());
-			
+			selectedSubjectColor.remove(selectedTable.getSelectedRow());
+
 			schedulePanel.repaint();
 			reloadTable(selectedTable, selectedSubject);
 			수강학점계산();
@@ -626,7 +642,8 @@ public class UI extends JFrame {
 	private void 초기화() {
 
 		selectedSubject.clear();
-		
+		selectedSubjectColor.clear();
+
 		schedulePanel.repaint();
 		reloadTable(selectedTable, selectedSubject);
 		수강학점계산();
