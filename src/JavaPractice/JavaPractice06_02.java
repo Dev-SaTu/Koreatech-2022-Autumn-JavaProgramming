@@ -43,8 +43,8 @@ public class JavaPractice06_02 {
 		
 		int count = 0;
 		
-		System.out.println("queue1: " + queue1);
-		System.out.println("queue2: " + queue2);
+		System.out.println("queue1: " + queue1 + " = " + sumQ1);
+		System.out.println("queue2: " + queue2 + " = " + sumQ2);
 		System.out.println("--------");
 		
 		while (true) {
@@ -75,6 +75,9 @@ public class JavaPractice06_02 {
 			count++;
 			
 			if (sumQ1 == sumQ2) {
+				break;
+			} else if (count > 100) {
+				count = -1;
 				break;
 			}
 			

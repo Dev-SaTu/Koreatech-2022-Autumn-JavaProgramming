@@ -7,7 +7,7 @@ public class JavaPractice06_01 {
 		String[] testCases = { "()()", "(())()", ")()(", "(()(", "(()())", "(()()((()))", "((()))()()(()))", "((((())))(()(()()))((()))()()((()))(((()()))()()))" };
 		
 		for (String testCase : testCases) {
-			System.out.printf("%s %b\n", testCase, ParenthesesCheck(testCase));
+			System.out.printf("%s = %b\n", testCase, ParenthesesCheck(testCase));
 		}
 		
 	}

@@ -120,6 +120,9 @@ public class UI extends JFrame {
 	/** selected subject color */
 	private List<Color> selectedSubjectColor = new ArrayList<Color>();
 
+	/** same name subject */
+	private List<JSONArray> samenameSubject = new ArrayList<JSONArray>();
+
 	/**
 	 * Launch the application.
 	 */
@@ -281,7 +284,9 @@ public class UI extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 
 				if (e.getButton() == MouseEvent.BUTTON1) {
-					if (e.getClickCount() >= 2) {
+					if (e.getClickCount() == 1) {
+						schedulePanel.repaint(); // temp
+					} else if (e.getClickCount() >= 2) {
 						과목담기();
 					}
 				}
@@ -391,7 +396,7 @@ public class UI extends JFrame {
 				// Background
 				g2.setColor(Color.white);
 				g2.fillRect(0, 0, getWidth(), getHeight());
-				
+
 				// Grid
 				g2.setColor(Color.black);
 				g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
@@ -437,8 +442,48 @@ public class UI extends JFrame {
 						g2.drawRect((day + 1) * getWidth() / 6, (dayMap.get(day)[0] + 1) * getHeight() / 20, getWidth() / 6, (dayMap.get(day)[1] - dayMap.get(day)[0] + 1) * getHeight() / 20 + 1);	
 					}
 				}
+
+				if (searchedTable.getSelectedRow() != -1) {
+
+					String 과목명 = searchedTable.getValueAt(searchedTable.getSelectedRow(), searchedTable.getColumnModel().getColumnIndex("과목명")).toString();
+					String 분반 = searchedTable.getValueAt(searchedTable.getSelectedRow(), searchedTable.getColumnModel().getColumnIndex("분반")).toString();
+					// temp 밖으로 옮기기
+					
+					List<JSONArray> sameNameSubject = new ArrayList<JSONArray>();
+
+					for (JSONArray subject : allSubject) {
+						if (subject.getString(1).equals(과목명)) {
+							sameNameSubject.add(subject);
+						}
+					}
+
+					for (JSONArray array : sameNameSubject) {
+						JSONArray schedule = array.getJSONArray(10);
+						Map<Integer, Integer[]> dayMap = new HashMap<Integer, Integer[]>();
+						for (int i = 0; i < schedule.length(); i++) {
+							int code = schedule.getInt(i);
+							int day = code / 100;
+							int time = code % 100;
+							if (!dayMap.containsKey(day)) {
+								dayMap.put(day, new Integer[] {Integer.MAX_VALUE, 0});
+							}
+							dayMap.put(day, new Integer[] {Math.min(dayMap.get(day)[0], time), Math.max(dayMap.get(day)[1], time)});
+						}
+						g2.setColor(Color.red);
+						g2.setStroke(new BasicStroke(2));
+						for (int day : dayMap.keySet()) {
+							g2.drawRect((day + 1) * getWidth() / 6, (dayMap.get(day)[0] + 1) * getHeight() / 20, getWidth() / 6, (dayMap.get(day)[1] - dayMap.get(day)[0] + 1) * getHeight() / 20 + 1);	
+						}
+						g2.setStroke(new BasicStroke(3));
+						for (int day : dayMap.keySet()) {
+							g2.drawRect((day + 1) * getWidth() / 6, (dayMap.get(day)[0] + 1) * getHeight() / 20, getWidth() / 6, (dayMap.get(day)[1] - dayMap.get(day)[0] + 1) * getHeight() / 20 + 1);	
+						}
+					}
+
+				}
+
 			}
-			
+
 		};
 		GridBagConstraints gbc_schedulePanel_2 = new GridBagConstraints();
 		gbc_schedulePanel_2.fill = GridBagConstraints.BOTH;
@@ -498,7 +543,7 @@ public class UI extends JFrame {
 		String body = response.body();
 
 		File file = new File("resource/subject_data");
-		OutputStream output = new FileOutputStream(file, true);
+		OutputStream output = new FileOutputStream(file, false);
 		output.write(body.getBytes());
 		output.close();
 
@@ -613,7 +658,7 @@ public class UI extends JFrame {
 
 			// temp 오름차순, 내림차순 생각하면 검색해야 함!
 			selectedSubject.add(searchedSubject.get(searchedTable.getSelectedRow()));
-			selectedSubjectColor.add(new Color(new Random().nextInt(256), new Random().nextInt(256), new Random().nextInt(256)));
+			selectedSubjectColor.add(new Color(new Random().nextInt(128), new Random().nextInt(128), new Random().nextInt(128)));
 
 			schedulePanel.repaint();
 			reloadTable(selectedTable, selectedSubject);
