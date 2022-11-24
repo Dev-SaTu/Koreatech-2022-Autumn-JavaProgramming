@@ -457,7 +457,10 @@ public class UI extends JFrame {
 						}
 					}
 
+					System.out.println();
+					
 					for (JSONArray array : sameNameSubject) {
+						
 						JSONArray schedule = array.getJSONArray(10);
 						Map<Integer, Integer[]> dayMap = new HashMap<Integer, Integer[]>();
 						for (int i = 0; i < schedule.length(); i++) {
@@ -470,14 +473,13 @@ public class UI extends JFrame {
 							dayMap.put(day, new Integer[] {Math.min(dayMap.get(day)[0], time), Math.max(dayMap.get(day)[1], time)});
 						}
 						g2.setColor(Color.red);
-						g2.setStroke(new BasicStroke(2));
+						g2.setStroke(new BasicStroke(분반.equals(array.getString(2)) ? 4 : 2));
 						for (int day : dayMap.keySet()) {
 							g2.drawRect((day + 1) * getWidth() / 6, (dayMap.get(day)[0] + 1) * getHeight() / 20, getWidth() / 6, (dayMap.get(day)[1] - dayMap.get(day)[0] + 1) * getHeight() / 20 + 1);	
 						}
-						g2.setStroke(new BasicStroke(3));
-						for (int day : dayMap.keySet()) {
-							g2.drawRect((day + 1) * getWidth() / 6, (dayMap.get(day)[0] + 1) * getHeight() / 20, getWidth() / 6, (dayMap.get(day)[1] - dayMap.get(day)[0] + 1) * getHeight() / 20 + 1);	
-						}
+						
+						System.out.println(schedule);
+						
 					}
 
 				}
