@@ -9,6 +9,7 @@ import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -31,9 +32,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
@@ -62,7 +65,7 @@ import org.jsoup.select.Elements;
 import com.formdev.flatlaf.FlatLightLaf;
 
 @SuppressWarnings("serial")
-public class UI extends JFrame {
+public class Hanpyo extends JFrame {
 
 	private JPanel contentPane;
 	JLabel lblNewLabel;
@@ -70,7 +73,6 @@ public class UI extends JFrame {
 	JPanel panel;
 	JPanel panel_1;
 	JTextField textField;
-	JButton btnNewButton;
 	JButton btnNewButton_1;
 	JButton btnNewButton_4;
 	JComboBox<String> comboBox;
@@ -120,8 +122,6 @@ public class UI extends JFrame {
 	/** selected subject color */
 	private List<Color> selectedSubjectColor = new ArrayList<Color>();
 
-	/** same name subject */
-	private List<JSONArray> samenameSubject = new ArrayList<JSONArray>();
 
 	/**
 	 * Launch the application.
@@ -135,9 +135,11 @@ public class UI extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
+
 					FlatLightLaf.setup();
-					UI frame = new UI();
+					Hanpyo frame = new Hanpyo();
 					frame.setVisible(true);
+
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -148,7 +150,7 @@ public class UI extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public UI() {
+	public Hanpyo() {
 		setIconImage(new ImageIcon("resource/orange.png").getImage());
 		setTitle("Hanpyo (Koreatech-2022-Autumn-JavaProgramming)");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -231,10 +233,6 @@ public class UI extends JFrame {
 		gbc_panel_1.gridy = 2;
 		contentPane.add(panel_1, gbc_panel_1);
 
-		btnNewButton = new JButton("문의/정보");
-		btnNewButton.addActionListener(e -> 문의정보());
-		panel_1.add(btnNewButton);
-
 		btnNewButton_1 = new JButton("이미지 저장");
 		btnNewButton_1.addActionListener(e -> {
 			try {
@@ -285,7 +283,7 @@ public class UI extends JFrame {
 
 				if (e.getButton() == MouseEvent.BUTTON1) {
 					if (e.getClickCount() == 1) {
-						schedulePanel.repaint(); // temp
+						schedulePanel.repaint();
 					} else if (e.getClickCount() >= 2) {
 						과목담기();
 					}
@@ -301,11 +299,14 @@ public class UI extends JFrame {
 
 				if (e.getButton() == MouseEvent.BUTTON1) {
 
+
+
 				}
 
 			}
 
 		});
+		searchedTable.setAutoCreateRowSorter(true);
 		scrollPane.setViewportView(searchedTable);
 
 		panel_5 = new JPanel();
@@ -377,6 +378,7 @@ public class UI extends JFrame {
 			}
 
 		});
+		selectedTable.setAutoCreateRowSorter(true);
 		scrollPane_2.setViewportView(selectedTable);
 
 		schedulePanel = new JPanel() {
@@ -417,69 +419,111 @@ public class UI extends JFrame {
 					g2.drawString(dayArray[i - 1], 22 + i * getWidth() / 6, 22);
 				}
 
-				g2.drawLine(getWidth() / 6 / 2, getHeight() / 20, getWidth() / 6 / 2,
-						getHeight() - getHeight() / 20 - 1);
+				g2.drawLine(getWidth() / 6 / 2, getHeight() / 20, getWidth() / 6 / 2, getHeight() - getHeight() / 20 - 1);
 				g2.drawString("이후", 28, getHeight() - 12);
 
 				// Schedule
 				for (JSONArray array : selectedSubject) {
+
 					g2.setColor(selectedSubjectColor.get(selectedSubject.indexOf(array)));
+
+					String name = array.getString(1);
+					int number = array.getInt(2);
 					JSONArray schedule = array.getJSONArray(10);
+					String teacher = array.getString(8);
+
 					Map<Integer, Integer[]> dayMap = new HashMap<Integer, Integer[]>();
+
+					Map<Integer, Point> map2 = new HashMap<Integer, Point>();
+
 					for (int i = 0; i < schedule.length(); i++) {
-						int code = schedule.getInt(i);
-						int day = code / 100;
-						int time = code % 100;
+
+						int day = schedule.getInt(i) / 100;
+						int time = schedule.getInt(i) % 100;
+
 						if (!dayMap.containsKey(day)) {
 							dayMap.put(day, new Integer[] {Integer.MAX_VALUE, 0});
 						}
+
 						dayMap.put(day, new Integer[] {Math.min(dayMap.get(day)[0], time), Math.max(dayMap.get(day)[1], time)});
-						g2.fillRect((day + 1) * getWidth() / 6 + 1, (time + 1) * getHeight() / 20 + 1, getWidth() / 6, getHeight() / 20 + 1);
+
+						int x = (day + 1) * getWidth() / 6 + 1;
+						int y = (time + 1) * getHeight() / 20 + 1;
+
+						g2.fillRect(x, y, getWidth() / 6, getHeight() / 20 + 1);
+
+						if (!map2.containsKey(day)) {
+							map2.put(day, new Point(x, y));
+						}
+
 					}
+
+					for (int k : map2.keySet()) {
+
+						Point p = map2.get(k);
+
+						g2.setColor(Color.black);
+						String content = String.format("%s_%02d_%s", name, number, teacher);
+						int length = content.length();
+						for (int i = 0; i <= length / 5; i++) {
+							String line = content.substring(0, Math.min(5, content.length()));
+							content = content.substring(Math.min(5, content.length()));
+							g2.drawString(line, p.x + 4, p.y + 20 + i * 14);
+						}
+
+					}
+
+
 					g2.setColor(Color.black);
 					g2.setStroke(new BasicStroke(2));
+
 					for (int day : dayMap.keySet()) {
-						g2.drawRect((day + 1) * getWidth() / 6, (dayMap.get(day)[0] + 1) * getHeight() / 20, getWidth() / 6, (dayMap.get(day)[1] - dayMap.get(day)[0] + 1) * getHeight() / 20 + 1);	
+
+						g2.drawRect((day + 1) * getWidth() / 6, (dayMap.get(day)[0] + 1) * getHeight() / 20, getWidth() / 6, (dayMap.get(day)[1] - dayMap.get(day)[0] + 1) * getHeight() / 20 + 1);
+
 					}
+
 				}
 
 				if (searchedTable.getSelectedRow() != -1) {
 
-					String 과목명 = searchedTable.getValueAt(searchedTable.getSelectedRow(), searchedTable.getColumnModel().getColumnIndex("과목명")).toString();
+					String 코드 = searchedTable.getValueAt(searchedTable.getSelectedRow(), searchedTable.getColumnModel().getColumnIndex("코드")).toString();
 					String 분반 = searchedTable.getValueAt(searchedTable.getSelectedRow(), searchedTable.getColumnModel().getColumnIndex("분반")).toString();
-					// temp 밖으로 옮기기
-					
-					List<JSONArray> sameNameSubject = new ArrayList<JSONArray>();
+
+					List<JSONArray> sameCodeSubject = new ArrayList<JSONArray>();
 
 					for (JSONArray subject : allSubject) {
-						if (subject.getString(1).equals(과목명)) {
-							sameNameSubject.add(subject);
+						if (subject.getString(0).equals(코드)) {
+							sameCodeSubject.add(subject);
 						}
 					}
 
-					System.out.println();
-					
-					for (JSONArray array : sameNameSubject) {
-						
+					for (JSONArray array : sameCodeSubject) {
+
 						JSONArray schedule = array.getJSONArray(10);
+
 						Map<Integer, Integer[]> dayMap = new HashMap<Integer, Integer[]>();
+
 						for (int i = 0; i < schedule.length(); i++) {
 							int code = schedule.getInt(i);
 							int day = code / 100;
 							int time = code % 100;
+
+							// time이 18 넘어갔을 때 조치 temp
+
 							if (!dayMap.containsKey(day)) {
 								dayMap.put(day, new Integer[] {Integer.MAX_VALUE, 0});
 							}
 							dayMap.put(day, new Integer[] {Math.min(dayMap.get(day)[0], time), Math.max(dayMap.get(day)[1], time)});
 						}
+
 						g2.setColor(Color.red);
-						g2.setStroke(new BasicStroke(분반.equals(array.getString(2)) ? 4 : 2));
+
+						g2.setStroke(new BasicStroke(분반.equals(array.getString(2)) ? 5 : 2));
 						for (int day : dayMap.keySet()) {
 							g2.drawRect((day + 1) * getWidth() / 6, (dayMap.get(day)[0] + 1) * getHeight() / 20, getWidth() / 6, (dayMap.get(day)[1] - dayMap.get(day)[0] + 1) * getHeight() / 20 + 1);	
 						}
-						
-						System.out.println(schedule);
-						
+
 					}
 
 				}
@@ -602,16 +646,6 @@ public class UI extends JFrame {
 
 	}
 
-	/**
-	 * @param message
-	 */
-
-	private void showMessage(String message) {
-
-		JOptionPane.showMessageDialog(this, message);
-
-	}
-
 	private void 개설학부검색() {
 
 		searchedSubject.clear();
@@ -656,11 +690,53 @@ public class UI extends JFrame {
 
 	private void 과목담기() {
 
-		if (searchedTable.getSelectedRow() != -1) {
+		JSONArray item = 선택한과목정보(searchedTable);
 
-			// temp 오름차순, 내림차순 생각하면 검색해야 함!
-			selectedSubject.add(searchedSubject.get(searchedTable.getSelectedRow()));
-			selectedSubjectColor.add(new Color(new Random().nextInt(128), new Random().nextInt(128), new Random().nextInt(128)));
+		if (item != null) {
+
+			Set<Integer> set = new HashSet<Integer>();
+
+			selectedSubject.forEach(t -> {
+				t.getJSONArray(10).forEach(x -> {
+					set.add((int) x);
+				});
+			});
+
+			boolean isContained = false;
+
+			for (int i = 0; i < item.getJSONArray(10).length(); i++) {
+				if (set.contains(item.getJSONArray(10).getInt(i))) {
+					isContained = true;
+				}
+			}
+
+			if (isContained) {
+
+				JOptionPane.showMessageDialog(this, "시간이 중복됩니다!", "Hanpyo", JOptionPane.WARNING_MESSAGE);
+
+			} else {
+
+				selectedSubjectColor.add(new Color(new Random().nextInt(128) + 127, new Random().nextInt(128) + 127, new Random().nextInt(128) + 127));
+				selectedSubject.add(item);
+
+				schedulePanel.repaint();
+				reloadTable(selectedTable, selectedSubject);
+				수강학점계산();
+
+			}
+
+		}
+
+	}
+
+	private void 과목빼기() {
+
+		JSONArray item = 선택한과목정보(selectedTable);
+
+		if (item != null) {
+
+			selectedSubjectColor.remove(selectedSubject.indexOf(item));
+			selectedSubject.remove(item);
 
 			schedulePanel.repaint();
 			reloadTable(selectedTable, selectedSubject);
@@ -670,20 +746,19 @@ public class UI extends JFrame {
 
 	}
 
-	private void 과목빼기() {
-
-		if (selectedTable.getSelectedRow() != -1) {
-
-			// temp 오름차순, 내림차순 생각하면 검색해야 함!
-			selectedSubject.remove(selectedTable.getSelectedRow());
-			selectedSubjectColor.remove(selectedTable.getSelectedRow());
-
-			schedulePanel.repaint();
-			reloadTable(selectedTable, selectedSubject);
-			수강학점계산();
-
+	private JSONArray 선택한과목정보(JTable table) {
+		if (table.getSelectedRow() != -1) {
+			String code = (String) table.getValueAt(table.getSelectedRow(), table.getColumnModel().getColumnIndex("코드"));
+			String classes = (String) table.getValueAt(table.getSelectedRow(), table.getColumnModel().getColumnIndex("분반"));
+			for (JSONArray item : allSubject) {
+				if (item.getString(0).equals(code) && item.getString(2).equals(classes)) {
+					return item;
+				}
+			}
+			return null;
+		} else {
+			return null;
 		}
-
 	}
 
 	private void 초기화() {
@@ -697,7 +772,7 @@ public class UI extends JFrame {
 
 	}
 
-	private void 수강학점계산() {
+	private int 수강학점계산() {
 
 		int sum = 0;
 
@@ -707,15 +782,87 @@ public class UI extends JFrame {
 
 		lblNewLabel_7.setText(String.format("수강학점 : %d", sum));
 
+		return sum;
+
 	}
 
 	private void 과목추천() {
 
-	}
+		Set<Integer> set = new HashSet<Integer>();
 
-	private void 문의정보() {
+		int maximumCredits = 0;
 
-		new InquiryDialog();
+		// 전공과목의 스케줄을 모은다.
+		for (int i = selectedSubject.size() - 1; i >= 0; i--) {
+
+			maximumCredits += selectedSubject.get(i).getInt(5);
+
+			if (!selectedSubject.get(i).getString(7).equals("교양학부") && !selectedSubject.get(i).getString(7).equals("HRD학과")) {
+
+				JSONArray schedule = selectedSubject.get(i).getJSONArray(10);
+
+				for (int j = 0; j < schedule.length(); j++) {
+					set.add(schedule.getInt(j));
+				}
+
+			} else {
+
+				selectedSubject.remove(i);
+
+			}
+
+		}
+
+		// 전공과목과 스케줄이 겹치지 않는 교양/HRD 과목을 모은다.
+		List<JSONArray> rah = new ArrayList<JSONArray>();
+
+		for (JSONArray item : allSubject) {
+
+			if (item.getString(7).equals("교양학부") || item.getString(7).equals("HRD학과")) {
+
+				boolean isContains = false;
+
+				for (int i = 0; i < item.getJSONArray(10).length(); i++) {
+					if (set.contains(item.getJSONArray(10).getInt(i))) {
+						isContains = true;
+					}
+				}
+
+				if (!isContains) {
+					rah.add(item);
+				}
+
+			}
+
+		}
+
+		// 수강 학점이 일치할 때까지 반복한다.
+		int credits = 0;
+
+		while (maximumCredits != credits) {
+
+			JSONArray target = rah.get(new Random().nextInt(rah.size()));
+
+			boolean isContained = false;
+			
+			for (int i = 0; i < target.getJSONArray(10).length(); i++) {
+				if (set.contains(target.getJSONArray(10).get(i))) {
+					isContained = true;
+				}
+			}
+			
+			if (!isContained && credits + target.getInt(5) <= maximumCredits) {
+				selectedSubjectColor.add(new Color(new Random().nextInt(128) + 127, new Random().nextInt(128) + 127, new Random().nextInt(128) + 127));
+				selectedSubject.add(target);
+			}
+
+			credits = 수강학점계산();
+
+		}
+
+		// reload and repaint
+		reloadTable(selectedTable, selectedSubject);
+		repaint();
 
 	}
 
@@ -724,6 +871,9 @@ public class UI extends JFrame {
 	 */
 
 	private void 이미지저장() throws IOException {
+
+		searchedTable.clearSelection();
+		repaint();
 
 		BufferedImage bi = new BufferedImage(schedulePanel.getWidth(), schedulePanel.getHeight(), BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = bi.createGraphics();
